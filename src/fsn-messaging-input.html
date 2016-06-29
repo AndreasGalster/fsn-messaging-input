@@ -1,69 +1,136 @@
-<dom-module id="fsn-messaging-input">
+<dom-module id='fsn-messaging-input'>
   <template>
-  <style include="houseme-styles"></style>
+  <style include='houseme-styles'></style>
   <style>
     :host {
+      background: var(--host-background, rgba(0,0,0,0.1));
+      padding: 15px;
+      display: block;
+      width: 100%;
+    }
+
+    paper-button {
+      color: var(--button-text);
+      background: var(--button-background);
+    }
+
+    span {
       @apply(--layout-horizontal);
       @apply(--layout-center);
-
-      background: rgba(0,0,0,0.05);
-      padding: 8px;
     }
 
     paper-textarea {
       @apply(--layout-flex);
+
+      --paper-input-container-color: rgba(255,255,255,1);
+      --paper-input-container-focus-color: white;
+      --paper-input-container-input-color: white;
+      --paper-input-container-underline: rgba(255,255,255,0.5);
+      --paper-input-container-underline-focus: white;
+
+    }
+
+    iron-autogrow-textarea {
+      width: 100%;
+      background: white;
+      padding: 10px;
+      border: none;
+      /*border: 1px solid var(--blue);*/
+      --iron-autogrow-textarea: {
+        padding: 10px;
+      }
     }
   </style>
 
-    <paper-textarea maxRows="3" on-keypress='sendMessage' no-label-float value={{message}}></paper-textarea>
-    <!-- <iron-icon icon="houseme:send" on-tap='sendMessage'></iron-icon> -->
-    <paper-button on-tap='sendMessage'>send</paper-button>
+    <span hidden$=[[small]]>
+      <paper-textarea
+        maxrows='3'
+        no-label-float
+        on-keypress='sendMessage'
+        label='Write a message'
+        value='{{message}}'>
+      </paper-textarea>
+      <paper-button on-tap='sendMessage' suffix>send</paper-button>
+    </span>
+
+    <span hidden$=[[!small]]>
+      <iron-autogrow-textarea
+        maxrows='3'
+        placeholder='Write a message'
+        on-keypress='sendMessage'
+        no-label-float
+        value='{{message}}'>
+        <!-- <iron-icon icon='fsn:send' on-tap='sendMessage' suffix></iron-icon> -->
+      </iron-autogrow-textarea>
+    </span>
 
   </template>
 </dom-module>
 
 <script>
-  require('@polymer/polymer/polymer.html')
-  require('@polymer/iron-icon/iron-icon.html')
-  require('@polymer/iron-flex-layout/iron-flex-layout.html')
-  require('@polymer/paper-input/paper-textarea.html')
-  require('@polymer/paper-button/paper-button.html')
 
-  require('moment');
+require('@polymer/polymer/polymer.html');
+require('@polymer/iron-icon/iron-icon.html');
+require('@polymer/iron-flex-layout/iron-flex-layout.html');
+require('@polymer/paper-input/paper-textarea.html');
+require('@polymer/paper-button/paper-button.html');
 
-  require('@andreasgalster/fsn-boilerplate/dist/fsn-boilerplate.html')
+const moment = require('moment');
 
-  Polymer({
-    is: 'fsn-messaging-input',
-    properties: {
-      message: String,
-      messageId: String,
-      chatId: String
+require('@andreasgalster/fsn-boilerplate/dist/fsn-boilerplate.html');
+
+Polymer({
+  is: 'fsn-messaging-input',
+  properties: {
+    small: {
+      type: Boolean,
+      value: false
     },
-
-    sendMessage: function(event) {
-      let keycode = (event.keyCode ? event.keyCode : event.which);
-
-      if(keycode == '13' || event.type == 'tap'){
-
-        let time = moment().format('ddd D [at] HH:mm');
-        let chatId =  Messages.findOne({
-          $and: [ {userids: Meteor.userId()}, {userids: this.messageId }]
-        });
-
-        console.log(chatId);
-        if (chatId) {
-          this.chatId = chatId._id;
-        }
-      // console.log(chatId);
-
-        Meteor.call('sendMessage', this.chatId, this.messageId, this.message, time, () => {
-          this.message = '';
-        });
-        this.fire('fsn-message-sent');
-        // Meteor.call('messageRead');
-      }
+    message: String,
+    messageId: String,
+    chatId: String,
+    public: {
+      type: Boolean,
+      value: true
+    },
+    private: {
+      type: Boolean,
+      value: false
     }
+  },
 
-  });
+  sendMessage: function(event) {
+    var keycode = event.keyCode ? event.keyCode : event.which;
+
+    if (keycode == '13' || event.type === 'tap' && this.message.length > 0) {
+
+      var time = moment().format('ddd D [at] HH:mm');
+      var fromUserId = Meteor.userId();
+
+      if(!this.chatId) {
+        var chatId = null;
+      } else {
+        var chatId = this.chatId;
+      }
+
+      if(this.public) {
+        console.log('public');
+        Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, time, () => this.message = '');
+      }else {
+        console.log('private');
+        Meteor.call('sendPrivateMessage', fromUserId, chatId, this.message, time, () =>this.message = '');
+      }
+
+      if (chatId) {
+        this.chatId = chatId._id;
+      }
+
+      this.fire('fsn-message-sent');
+    }
+  }
+
+});
+
+
+
 </script>
