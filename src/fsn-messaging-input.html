@@ -101,6 +101,9 @@ Polymer({
     message: String,
     messageId: String,
     chatId: String,
+    userSelected: {
+      type: Boolean
+    }
   },
 
   sendMessage: function(event) {
@@ -127,10 +130,10 @@ Polymer({
         Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, () => this.message = '');
       }else {
 
-        if(this.messageId) {
+        if(this.messageId && !this.userSelected) {
           console.log('inserting into existing');
           Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
-        } else if (this.toUserId) {
+        } else if (this.toUserId && this.userSelected) {
           console.log('inserting into new');
           Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
         } else {
