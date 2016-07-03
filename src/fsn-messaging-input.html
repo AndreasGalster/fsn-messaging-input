@@ -127,14 +127,11 @@ Polymer({
         Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, () => this.message = '');
       }else {
 
-
-        console.log(fromUserId);
-        console.log(this.toUserId);
-        console.log(messageId);
-
         if(this.messageId) {
+          console.log('inserting into existing');
           Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
         } else if (this.toUserId) {
+          console.log('inserting into new');
           Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
         } else {
           console.log('cannot send a message, no user or message selected');
