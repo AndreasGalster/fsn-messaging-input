@@ -48,7 +48,8 @@
         no-label-float
         on-keypress='sendMessage'
         label='Write a message'
-        value='{{message}}'>
+        value={{message}}
+        minlength=[[minLength]]>
       </paper-textarea>
       <paper-button on-tap='sendMessage' suffix>send</paper-button>
     </span>
@@ -59,7 +60,8 @@
         placeholder='Write a message'
         on-keypress='sendMessage'
         no-label-float
-        value='{{message}}'>
+        bind-value={{message}}
+        minlength=[[minLength]]>
         <!-- <iron-icon icon='fsn:send' on-tap='sendMessage' suffix></iron-icon> -->
       </iron-autogrow-textarea>
     </span>
@@ -68,10 +70,11 @@
 </dom-module>
 
 <script>
-
 require('@polymer/polymer/polymer.html');
+
 require('@polymer/iron-icon/iron-icon.html');
 require('@polymer/iron-flex-layout/iron-flex-layout.html');
+
 require('@polymer/paper-input/paper-textarea.html');
 require('@polymer/paper-button/paper-button.html');
 
@@ -86,17 +89,18 @@ Polymer({
       type: Boolean,
       value: false
     },
-    message: String,
-    messageId: String,
-    chatId: String,
     public: {
       type: Boolean,
-      value: true
+      value: false
     },
     private: {
       type: Boolean,
       value: false
-    }
+    },
+    toUserId: String,
+    message: String,
+    messageId: String,
+    chatId: String,
   },
 
   sendMessage: function(event) {
@@ -113,12 +117,35 @@ Polymer({
         var chatId = this.chatId;
       }
 
+      if(!this.messageId) {
+        var messageId = null;
+      } else {
+        var messageId = this.messageId;
+      }
+
       if(this.public) {
-        console.log('public');
-        Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, time, () => this.message = '');
+        Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, () => this.message = '');
       }else {
-        console.log('private');
-        Meteor.call('sendPrivateMessage', fromUserId, chatId, this.message, time, () =>this.message = '');
+
+
+        console.log(fromUserId);
+        console.log(this.toUserId);
+        console.log(messageId);
+
+        if(this.messageId) {
+          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
+        } else if (this.toUserId) {
+          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, () => this.message = '');
+        } else {
+          console.log('cannot send a message, no user or message selected');
+          this.message = ''
+        }
+
+
+
+
+        // (this.userId && this.messageId
+
       }
 
       if (chatId) {
@@ -130,7 +157,4 @@ Polymer({
   }
 
 });
-
-
-
 </script>
