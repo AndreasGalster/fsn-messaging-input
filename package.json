@@ -1,6 +1,6 @@
 {
   "name": "@andreasgalster/fsn-messaging-input",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "fsn-messaging-input is a set of basic shared styles, similar to bootstrap",
   "main": "fsn-messaging-input.html",
   "scripts": {
