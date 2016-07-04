@@ -101,9 +101,7 @@ Polymer({
     message: String,
     messageId: String,
     chatId: String,
-    userSelected: {
-      type: Boolean
-    }
+    userSelected: Boolean
   },
 
   sendMessage: function(event) {
@@ -111,7 +109,6 @@ Polymer({
 
     if (keycode == '13' || event.type === 'tap' && this.message.length > 0) {
 
-      var time = moment().format('ddd D [at] HH:mm');
       var fromUserId = Meteor.userId();
 
       if(!this.chatId) {
@@ -130,6 +127,11 @@ Polymer({
         Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, () => this.message = '');
       }else {
 
+        console.log(fromUserId);
+        console.log(this.toUserId);
+        console.log(messageId);
+        console.log(this.userSelected);
+
         if(this.messageId && !this.userSelected) {
           console.log('inserting into existing');
           Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, true, () => {
@@ -145,11 +147,6 @@ Polymer({
           console.log('cannot send a message, no user or message selected');
           this.message = ''
         }
-
-
-
-
-        // (this.userId && this.messageId
 
       }
 
