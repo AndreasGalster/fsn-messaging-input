@@ -132,10 +132,15 @@ Polymer({
 
         if(this.messageId && !this.userSelected) {
           console.log('inserting into existing');
-          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, true, () => this.message = '');
+          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, true, () => {
+            this.message = ''
+          });
         } else if (this.toUserId && this.userSelected) {
           console.log('inserting into new');
-          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, false, () => this.message = '');
+          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, false, () => {
+            this.message = '';
+            this.userSelected = false;
+          });
         } else {
           console.log('cannot send a message, no user or message selected');
           this.message = ''
