@@ -18,7 +18,7 @@ gulp.task('default', function() {
    .pipe($.if('*.js', $.babel({
      presets: ['es2015']
    })))
-   .pipe($.if('*.js', strip())   
+  //  .pipe($.if('*.js', strip())   
   //  .pipe($.deleteLines({
   //    'filters': [
   //      /<html>/i

@@ -97,6 +97,7 @@ Polymer({
       type: Boolean,
       value: false
     },
+    fromUserId: String,
     toUserId: String,
     message: String,
     messageId: String,
@@ -106,10 +107,8 @@ Polymer({
 
   sendMessage: function(event) {
     var keycode = event.keyCode ? event.keyCode : event.which;
-
     if (keycode == '13' || event.type === 'tap' && this.message.length > 0) {
-
-      var fromUserId = Meteor.userId();
+      this.fromUserId = Meteor.userId();
 
       if(!this.chatId) {
         var chatId = null;
@@ -117,31 +116,28 @@ Polymer({
         var chatId = this.chatId;
       }
 
-      if(!this.messageId) {
-        var messageId = null;
-      } else {
-        var messageId = this.messageId;
-      }
-
       if(this.public) {
-        Meteor.call('sendPublicMessage', fromUserId, chatId, this.message, () => this.message = '');
+        Meteor.call('sendPublicMessage', this.fromUserId, chatId, this.message, () => this.message = '');
       }else {
 
-        console.log(fromUserId);
-        console.log(this.toUserId);
-        console.log(messageId);
-        console.log(this.userSelected);
-
-        if(this.messageId && !this.userSelected) {
-          console.log('inserting into existing');
-          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, true, () => {
-            this.message = ''
-          });
-        } else if (this.toUserId && this.userSelected) {
+        // if(this.messageId && !this.userSelected) {
+        // if the user is selected set userSelected prop to true
+        // does not use the messageId
+        if(this.userSelected) {
           console.log('inserting into new');
-          Meteor.call('sendPrivateMessage', fromUserId, this.toUserId, messageId, this.message, false, () => {
+          Meteor.call('sendPrivateMessage', this.fromUserId, this.toUserId, this.messageId, this.message, true, (err,res) => {
+            this.message = ''
+            this.fire('user-selected-false');
+            console.log(res);
+            this.fire('messageId', res);
+          });
+        } else if (!this.userSelected) {
+        // } else if (this.toUserId && this.userSelected) {
+        // if the user is not selected set userSelected prop to false
+        // use the messageId
+          console.log('inserting into existing');
+          Meteor.call('sendPrivateMessage', this.fromUserId, this.toUserId, this.messageId, this.message, false, () => {
             this.message = '';
-            this.userSelected = false;
           });
         } else {
           console.log('cannot send a message, no user or message selected');
